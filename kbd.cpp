@@ -4,7 +4,7 @@
 #include <ps2_raw_kbd.h>
 #include "kbd.h"
 
-#define DBGx(x) x
+#//#define DEBUGGING
 
 // http://www.6502.org/users/andre/petindex/keyboards.html
 
@@ -79,15 +79,12 @@ uint8_t kbd::_map(uint8_t scan) {
 }
 	
 void kbd::_reset(uint8_t k) {
-	DBGx(printf("_reset: %02x\n", k));
 	if (k != 0xff)
 		_rows[(k & 0xf0) >> 4] &= ~(1 << (k & 0x0f));
 }
 
 void kbd::up(uint8_t scan) {
 
-	DBGx(printf("key up: %02x\n", scan));
-	//DBGx(println());
 	if (scan == 0xe0)
 		_ext = true;
 	else if (_ext) {
@@ -127,15 +124,12 @@ void kbd::up(uint8_t scan) {
 }
 
 void kbd::_set(uint8_t k) {
-	DBGx(printf("_set: %02x\n", k));
 	if (k != 0xff)
 		_rows[(k & 0xf0) >> 4] |= 1 << (k & 0x0f);
 }
 
 void kbd::down(uint8_t scan) {
 
-	DBGx(printf("key down: %2x\n", scan, scan));
-	//DBGx(println());
 
 	if (scan == 0xe0)
 		_ext = true;
