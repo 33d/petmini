@@ -11,6 +11,8 @@
 #include "kbd.h"
 #include "petio.h"
 
+#include "SimpleTimer.h"
+
 #if ROM_SET == series4
 #include "roms/basic4_b000.h"
 #include "roms/basic4_c000.h"
@@ -48,7 +50,17 @@ screen screen;
 Memory memory;
 r6502 cpu(memory);
 
+static SimpleTimer timers;
+
 const char *filename;
+
+void show_status(const char* message) {
+    static int message_timer = -1;
+	if (message_timer != -1)
+		timers.deleteTimer(message_timer);
+	screen.status(message);
+	message_timer = timers.setTimeout(3000, []() { screen.status(""); });
+}
 
 bool reset() {
 
@@ -68,21 +80,21 @@ void function_keys(uint8_t key) {
 		break;
 	case 2:
 		filename = io.files.advance();
-		screen.status(filename? filename: "No file");
+		show_status(filename? filename: "No file");
 		break;
 	case 3:
 		filename = io.files.rewind();
-		screen.status(filename? filename: "No file");
+		show_status(filename? filename: "No file");
 		break;
 	case 4:
 		if (io.load_prg())
 			snprintf(buf, sizeof(buf), "Loaded %s", filename);
 		else
 			snprintf(buf, sizeof(buf), "Failed to load %s", filename);
-		screen.status(buf);
+		show_status(buf);
 		break;
 	case 6:
-		screen.status(io.files.checkpoint());
+		show_status(io.files.checkpoint());
 		break;
 	case 7:
 		if (filename)
@@ -130,9 +142,9 @@ void setup() {
 	bool sd = reset();
 
 	if (!sd)
-		screen.status("No SD Card");
+		show_status("No SD Card");
 	else if (!io.start())
-		screen.status("Failed to open " PROGRAMS);
+		show_status("Failed to open " PROGRAMS);
 }
 
 void loop() {
@@ -140,4 +152,6 @@ void loop() {
 	ps2.poll();
 
 	hardware_run();
+
+	timers.run();
 }
