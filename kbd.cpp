@@ -4,7 +4,7 @@
 #include <ps2_raw_kbd.h>
 #include "kbd.h"
 
-//#define DEBUGGING
+#define DBGx(x) x
 
 // http://www.6502.org/users/andre/petindex/keyboards.html
 
@@ -79,15 +79,18 @@ uint8_t kbd::_map(uint8_t scan) {
 }
 	
 void kbd::_reset(uint8_t k) {
-	_rows[(k & 0xf0) >> 4] &= ~(1 << (k & 0x0f));
+	DBGx(printf("_reset: %02x\n", k));
+	if (k != 0xff)
+		_rows[(k & 0xf0) >> 4] &= ~(1 << (k & 0x0f));
 }
 
 void kbd::up(uint8_t scan) {
 
-	DBG(printf("key up: %02x", scan));
-	DBG(println());
-
-	if (_ext) {
+	DBGx(printf("key up: %02x\n", scan));
+	//DBGx(println());
+	if (scan == 0xe0)
+		_ext = true;
+	else if (_ext) {
 		_ext = false;
 		switch(scan) {
 		case 0x69:	// end
@@ -124,13 +127,15 @@ void kbd::up(uint8_t scan) {
 }
 
 void kbd::_set(uint8_t k) {
-	_rows[(k & 0xf0) >> 4] |= 1 << (k & 0x0f);
+	DBGx(printf("_set: %02x\n", k));
+	if (k != 0xff)
+		_rows[(k & 0xf0) >> 4] |= 1 << (k & 0x0f);
 }
 
 void kbd::down(uint8_t scan) {
 
-	DBG(printf("key down: %02x", scan));
-	DBG(println());
+	DBGx(printf("key down: %2x\n", scan, scan));
+	//DBGx(println());
 
 	if (scan == 0xe0)
 		_ext = true;

@@ -53,7 +53,11 @@ uint16_t ps2_raw_kbd::read() {
 		return 0;
 
 	uint8_t k = (s & 0xff);
-	if (k == 0xf0) {
+	if (k == 0xe0) {
+		this->ext = true;
+		return 0;
+	}
+	else if (k == 0xf0) {
 		brk = true;
 		return 0;
 	}
@@ -77,11 +81,19 @@ void ps2_raw_kbd::reset() {
 void ps2_raw_kbd::poll() {
 	if (available()) {
 		uint16_t scan = read();
+		if (scan == 0)
+			return;
 		uint8_t k = (scan & 0xff);
-		if (scan & 0x8000)
+		if (scan & 0x8000) {
+			if (this->ext)
+				_m.up(0xe0);
 			_m.up(k);
-		else
+		} else {
+			if (this->ext)
+				_m.down(0xe0);
 			_m.down(k);
+		}
+		this->ext = false;
 	}
 }
 

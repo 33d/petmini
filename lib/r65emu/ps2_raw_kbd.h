@@ -30,4 +30,5 @@ private:
 
 	std::function<void(uint8_t)> _f;
 	matrix_keyboard &_m;
+	bool ext;
 };
